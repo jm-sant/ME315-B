@@ -1,0 +1,97 @@
+---
+title: "LAB02.JoséMario"
+format: pdf
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(ggcal)
+```
+
+# Questão 1)
+# Precisamos guardar duas estatisticas suficientes, a soma dos voos atrasados, e o total de voos contados, então ai sim somamos todos os atrasos, os contados, ai calculamos a porcentagem final.
+
+```{r}
+#Questão 2)
+getStats <- function(input,pos) {
+  input %>% filter(AIRLINE %in% c('AA', 'DL', 'UA', 'US')) %>% 
+  filter(!is.na(ARRIVAL_DELAY), !is.na(YEAR), !is.na(MONTH), !is.na(DAY), !is.na(AIRLINE)) %>%
+    group_by(YEAR, MONTH, DAY, AIRLINE) %>% 
+    summarise(atrasos = sum(ARRIVAL_DELAY > 10), total = n(), .groups = "drop")
+}
+
+  
+    
+
+
+```
+
+```{r}
+# Questão 3)
+colunas_interesse <- cols_only(
+  YEAR = col_integer(),
+  MONTH = col_integer(),
+  DAY = col_integer(),
+  AIRLINE = col_character(),
+  ARRIVAL_DELAY = col_double()
+)
+dados_resumidos_lotes <- read_csv_chunked(
+  file = "C:\\Users\\José\\Documents\\ME315\\Nova pasta\\flights.csv", 
+  callback = DataFrameCallback$new(getStats), 
+  chunk_size = 100000,
+  col_types = colunas_interesse
+)
+head(dados_resumidos_lotes)
+```
+
+```{r}
+# Questão 4)
+computeStats <- function(dados) {
+  dados %>% 
+    group_by(AIRLINE, YEAR, MONTH, DAY) %>% 
+    summarise(
+      atrasos_totais = sum(atrasos, na.rm = TRUE),
+      voos_totais = sum(total, na.rm = TRUE),
+      .groups = "drop"
+    ) %>% 
+    transmute(
+      Cia = AIRLINE,
+      Data = as.Date(paste(YEAR, MONTH, DAY, sep = "-")),
+      Perc = atrasos_totais / voos_totais
+    )
+}
+stats <- computeStats(dados_resumidos_lotes)
+head(stats)
+```
+
+```{r}
+#Questão 5)
+library(ggcal)
+library(ggplot2)
+
+pal <- scale_fill_gradient(low = "#4575b4", high = "#d73027")
+
+baseCalendario <- function(stats, cia) {
+  dados_cia <- stats %>% filter(Cia == cia)
+  ggcal(dados_cia$Data, dados_cia$Perc)
+}
+cAA <- baseCalendario(stats, "AA")
+cDL <- baseCalendario(stats, "DL")
+cUA <- baseCalendario(stats, "UA")
+cUS <- baseCalendario(stats, "US")
+
+cAA + pal + ggtitle("% de Atrasos - American Airlines (AA)")
+cDL + pal + ggtitle("% de Atrasos - Delta Air Lines (DL)")
+cUA + pal + ggtitle("% de Atrasos - United Airlines (UA)")
+cUS + pal + ggtitle("% de Atrasos - US Airways (US)")
+```
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
+
