@@ -1,0 +1,82 @@
+---
+title: "lista02.Santanna"
+format: pdf
+editor: visual
+---
+```{r}
+library(DBI)
+library(RSQLite)
+```
+
+
+```{r}
+con <- dbConnect(RSQLite::SQLite(), "C:\\Users\\José\\Documents\\ME315\\me315.sqlite")
+```
+
+```{sql connection=con}
+-- Questão 1)
+SELECT * FROM PRESERVE 
+ORDER BY ACRES ASC
+```
+
+```{sql connection=con}
+-- Questao 2)
+SELECT PNAME, FEE FROM PRESERVE 
+WHERE STATE = 'MT' 
+ORDER BY PNAME DESC
+```
+```{sql, connection=con}
+-- Questão 3)
+SELECT FEE, ACRES FROM PRESERVE 
+ORDER BY FEE ASC, ACRES ASC
+``` 
+
+```{sql, connection=con}
+-- Questão 4)
+SELECT PNAME FROM PRESERVE 
+WHERE STATE = 'AZ' 
+ORDER BY PNO ASC
+```
+
+```{sql, connection=con}
+-- Questão 5)
+SELECT STATE, FEE, PNO FROM PRESERVE 
+WHERE ACRES > 100 
+ORDER BY STATE DESC, FEE DESC, PNO ASC
+```
+
+```{sql, connection=con}
+-- QUestão 6)
+SELECT * FROM PRESERVE 
+WHERE STATE >= 'M'
+```
+
+```{sql, connection=con}
+-- Questão 7)
+SELECT * FROM PRESERVE 
+WHERE PNAME < 'TATKON'
+```
+
+```{sql, connection=con}
+-- Questão 9)
+SELECT * FROM EMPLOYEE 
+ORDER BY ENAME ASC
+```
+
+```{sql, connection=con}
+-- Questão 10)
+SELECT ENAME, SALARY FROM EMPLOYEE 
+WHERE SALARY > 2000 
+ORDER BY SALARY DESC
+```
+
+```{sql, connection=con}
+-- Questão 11)
+SELECT DNO, ENO, ENAME FROM EMPLOYEE 
+ORDER BY DNO DESC, ENO ASC
+```
+```{r}
+dbDisconnect(con)
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
