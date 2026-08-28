@@ -1,0 +1,196 @@
+---
+title: "Lista03.SantAnna"
+format: pdf
+editor: visual
+---
+
+
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+con <- dbConnect(RSQLite::SQLite(), "C:\\Users\\José\\Downloads\\me315 (1).sqlite")
+
+```
+
+
+
+
+```{sql connection=con}
+-- Questão 1)
+select distinct state, fee from preserve
+```
+
+```{sql connection=con}
+-- Questão 2)
+select distinct dno from employee
+```
+
+```{sql connection=con}
+-- Questão 3)
+SELECT DNO, SALARY FROM EMPLOYEE
+-- nesta tabela está apenas organizado os dno e salary de acordo com a ordem da tabela.
+```
+
+```{sql connection=con}
+SELECT DISTINCT DNO, SALARY FROM EMPLOYEE
+-- Aqui aparece os valores sem repetição, invés de mostrar os empates identicos, ele mostra uma combinação para representar o caso geral.
+```
+
+```{sql connection=con}
+SELECT DISTINCT DNO, SALARY FROM EMPLOYEE ORDER BY DNO, SALARY
+-- Nesta tabela ta filtrando em ordem crescente, os salarios sem repetição.
+```
+
+\
+
+```{sql connection=con}
+-- Questão 4)
+select * from preserve
+where state = 'MT' and acres < 1000
+```
+```{sql connection=con}
+-- Questão 5)
+select * from preserve
+where acres >= 1200 and acres <= 15000
+```
+
+```{sql connection=con}
+-- Questão 6)
+select * from preserve
+where state = 'MT' and fee = 0 and acres >= 10000
+```
+```{sql connection=con}
+-- Questão 7)
+select * from preserve
+where state = 'MA' or state = 'MT'
+```
+
+```{sql connection=con}
+-- Questão 8)
+select * from preserve
+where state = 'MT' or acres <= 1000
+```
+```{sql connection=con}
+-- Questão 9)
+select PNO, PNAME from preserve
+where fee != 0
+```
+```{sql connection=con}
+ -- Questão 10)
+ select PNO, PNAME from preserve
+ where fee != 3 and fee != 10
+```
+```{sql connection=con}
+-- Questão 11)
+select * from preserve
+where (state = 'AZ' and fee == 0) or acres < 100
+```
+```{sql connection=con}
+-- Questão 12)
+select * from preserve
+where (acres < 1000 and fee = 0) or state = 'AZ'
+```
+
+```{sql connection=con}
+-- Questão 13)
+select * from preserve
+where fee <= 0 or (state = 'MT' and acres > 1000)
+```
+```{sql connection=con}
+-- Questão 14)
+select * from preserve
+where not (state = 'MT' and fee = 0)
+```
+```{sql connection=con}
+-- Questão 15)
+select * from preserve
+WHERE STATE = 'MA' AND (ACRES > 1000 OR FEE = 0.0)
+-- Obriga que a reserva seja localizada em ('MA').
+-- Cumprida essa obrigação principal,
+-- a reserva também precisa ter mais de 1.000 acres ou ser gratuita
+```
+```{sql connection=con}
+select * from preserve
+WHERE (STATE = 'MA' AND ACRES > 1000) OR (STATE = 'MA' AND FEE = 0.0)
+-- Cria duas entradas diferentes.
+-- A reserva entra se for de 'MA' e maior que 1.000 acres,
+-- ou entra se for de 'MA' e gratuita
+```
+
+```{sql connection=con}
+ -- Questão 16)
+ select * from preserve
+ WHERE STATE = 'MA' OR (ACRES > 1000 AND FEE = 0.0)
+ -- Aceita imediatamente qualquer reserva que fique no estado de 'MA'.
+ --Se a reserva for de outro estado,
+ --ela só será aceita se for maior que 1.000 acres e gratuita ao mesmo tempo.
+```
+```{sql connection=con}
+select * from preserve
+WHERE (STATE = 'MA' OR ACRES > 1000) AND (STATE = 'MA' OR FEE = 0.0)
+-- Exige que a linha passe em dois testes.
+--Teste 1: ser de 'MA' ou maior que 1.000 acres.
+--Teste 2: ser de 'MA' ou ser gratuita.
+--Se uma reserva não for de 'MA',
+--a única forma de passar no Teste 1 é sendo maior que 1.000 acres,
+--e a única forma de passar no Teste 2 é sendo gratuita.
+```
+```{sql connection=con}
+-- Questão 17)
+select * from preserve
+WHERE NOT (ACRES < 50 AND STATE = 'MA')
+-- O parêntese isola as reservas de Massachusetts
+-- (menos de 50 acres E do estado 'MA').
+-- O NOT na frente atua bloqueando exatamente esse grupo e permitindo todo o resto.
+```
+
+```{sql connection=con}
+select * from preserve
+WHERE NOT ACRES < 50 AND NOT STATE = 'MA'
+-- Avalia de forma que a reserva não pode ser menor que 50 acres
+-- E não pode ser de 'MA'.
+-- Isso bloqueia qualquer reserva de 'MA' e qualquer reserva < 50.
+```
+
+```{sql connection=con}
+select * from preserve
+WHERE ACRES >= 50 OR STATE <> 'MA'
+-- Aceita a reserva se ela tiver 50 acres ou mais,
+--OU se for de qualquer estado diferente de 'MA'.
+--A única coisa que é barrada é uma reserva que falhe nas duas regras:
+--ter menos de 50 acres e ser de 'MA'.
+```
+
+```{sql connection=con}
+-- Questão 18)
+select * from preserve
+WHERE NOT (ACRES < 50 OR STATE = 'MA')
+-- O parêntese lista dois motivos de exclusão:
+--ser menor que 50 acres ou ser de 'MA'.
+-- O NOT bloqueia quem tiver qualquer uma dessas características.
+--O que sobra na tabela são apenas reservas com 50 acres
+-- ou mais localizadas fora de 'MA'.
+```
+
+```{sql connection=con}
+select * from preserve
+WHERE NOT ACRES < 50 OR NOT STATE = 'MA'
+-- Aceita a reserva se ela não for pequena OU se não for de 'MA'.
+--Na prática, uma reserva de 10 acres que não seja de 'MA' entra pela segunda regra,
+--e uma reserva de 1.000 acres em 'MA' entra pela primeira.
+--Quase a tabela toda aparece no resultado.
+```
+
+```{sql connection=con}
+select * from preserve
+WHERE NOT ACRES < 50 AND NOT STATE = 'MA'
+-- exige o cumprimento de duas negações conjuntas:
+-- a reserva não pode ser pequena E não pode ser de 'MA'.
+```
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
+
