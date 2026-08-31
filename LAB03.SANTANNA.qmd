@@ -1,0 +1,63 @@
+---
+title: "Lab03.SantAnna"
+format: html
+editor: visual
+---
+```{r, warning=FALSE}
+library(readr)
+library(dplyr)
+library(leaflet)
+library(tidyr)
+```
+
+```{r, warning=FALSE}
+airlines <- read.csv("C:\\Users\\José\\OneDrive\\Desktop\\ME315\\airlines.csv")
+airports <- read_csv( "C:\\Users\\José\\OneDrive\\Desktop\\ME315\\airports.csv",col_select = c("IATA_CODE", "CITY", "STATE", "LATITUDE", "LONGITUDE"))
+
+```
+
+```{r, warning=FALSE}
+flights <- read.csv("C:\\Users\\José\\OneDrive\\Desktop\\ME315\\flights.csv")
+```
+
+```{r,warning=FALSE}
+arquivo_voo <- function(df,pos){
+  df %>% select(DESTINATION_AIRPORT, ARRIVAL_DELAY) %>%
+    filter(!grepl("^1",DESTINATION_AIRPORT)) %>% drop_na() %>% group_by(DESTINATION_AIRPORT) %>% summarise(soma_atraso = sum(ARRIVAL_DELAY), n_voos = n(), .groups = "drop")
+}
+estat_blocos <- read_csv_chunked("C:\\Users\\José\\OneDrive\\Desktop\\ME315\\flights.csv",callback = DataFrameCallback$new(arquivo_voo), chunk_size = 1000000)
+```
+```{r, warning=FALSE}
+flights <- estat_blocos %>% group_by(DESTINATION_AIRPORT) %>% summarise(atraso_medio = sum(soma_atraso/ sum(n_voos)), .groups = "drop")
+```
+
+```{r, warning=FALSE}
+aero_ausente <- flights %>% anti_join(airports, by = c("DESTINATION_AIRPORT" = "IATA_CODE"))
+flights <- flights %>%
+  left_join(airports, by = c("DESTINATION_AIRPORT" = "IATA_CODE"))
+```
+
+```{r, warning=FALSE}
+aero_por_estado <- flights %>% filter(!is.na(STATE)) %>% count(STATE, name = "Number of airports", sort = TRUE)
+View(aero_por_estado)
+
+```
+
+```{r, warning=FALSE}
+this <- leaflet(data = flights) %>%
+  addTiles() %>%
+  addMarkers(
+    lng = ~LONGITUDE,
+    lat = ~LATITUDE,
+    popup = ~paste("Airport:", DESTINATION_AIRPORT, "<br>Atraso médio:", round(atraso_medio, 2), "min")
+  )
+
+
+this
+```
+```{r}
+Sys.setenv(TZ = "America/Sao_Paulo")
+Sys.time()
+```
+
+
